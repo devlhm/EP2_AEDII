@@ -19,12 +19,11 @@ typedef struct
 	NO *raiz;
 } ArvB;
 
-void insere(ArvB *arvore, int chave)
-{
-	
+bool verificaNoCheio(NO* no) {
+	return no->numChaves == (2*t)-1;
 }
 
-void divideNo(ArvB* arvore, NO* pai, int i, NO* no) {
+void divideNo(NO* pai, int i, NO* no) {
 	NO* novo = (NO*) malloc(sizeof(NO));
 	novo->folha = no->folha;
 	novo->numChaves = t-1;
@@ -53,6 +52,50 @@ void divideNo(ArvB* arvore, NO* pai, int i, NO* no) {
 
 	pai->chave[i] = no->chave[t - 1];
 	pai->numChaves += 1;
+}
+
+void insereNoNaoCheio(NO* no, int chave)
+{
+	int i = no->numChaves - 1;
+	if(no->folha) {
+		while(i >= 0 && chave < no->chave[i]) {
+			no->chave[i+1] = no->chave[i];
+			i -= 1;
+		}
+
+		no->chave[i+1] = chave;
+		no->numChaves += 1;
+	} else {
+		while(i >= 0 && chave < no->chave[i]) {
+			i -= 1;
+		}
+
+		i += 1;
+
+		if(verificaNoCheio(no->filhos[i])) {
+			divideNo(no, i, no->filhos[i]);
+			if(chave > no->chave[i]) {
+				i += 1;
+			}
+		}
+
+		insereNoNaoCheio(no->filhos[i], chave);
+	}
+}
+
+void insere(ArvB* arvore, int chave) {
+	NO* raiz = arvore->raiz;
+	if(verificaNoCheio(raiz)) {
+		NO* s = (NO*) malloc(sizeof(NO));
+		arvore->raiz = s;
+		s->folha = false;
+		s->numChaves = 0;
+		s->filhos[0] = raiz;
+		divideNo(s, 0, raiz);
+		insereNoNaoCheio(s, chave);
+	} else {
+		insereNoNaoCheio(raiz, chave);
+	}
 }
 
 bool criaArvoreB(ArvB *arvore)
