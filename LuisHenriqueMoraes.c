@@ -104,11 +104,9 @@ void insereNoNaoCheio(NO *no, int chave)
 
 void insere(ArvB *arvore, int chave)
 {
-	printf("Insere %d: ", chave);
 	NO *raiz = arvore->raiz;
 	if (verificaNoCheio(raiz))
 	{
-		printf(" raiz cheia");
 		NO *s = (NO *)malloc(sizeof(NO));
 		arvore->raiz = s;
 		s->folha = false;
@@ -120,10 +118,8 @@ void insere(ArvB *arvore, int chave)
 	}
 	else
 	{
-		printf(" raiz vazia");
 		insereNoNaoCheio(raiz, chave);
 	}
-	puts("");
 }
 
 int max(int a, int b)
@@ -216,8 +212,8 @@ void removeDoNo(NO *no, int chave)
 	for (int j = i; j < no->numChaves - 1; j++)
 		no->chave[j] = no->chave[j + 1];
 
-	for (int j = i + 1; j < no->numChaves; j++)
-		no->filhos[j] = no->filhos[j + 1];
+	no->filhos[no->numChaves - 1] = no->filhos[no->numChaves];
+	no->filhos[no->numChaves] = NULL;
 
 	no->numChaves--;
 }
@@ -234,6 +230,7 @@ void removeDaSubarvore(NO *no, int chave)
 	if (i != -1)
 	{
 		// CASO 2
+		
 		NO *y = no->filhos[i];
 		NO *z = no->filhos[i + 1];
 		if (y->numChaves >= t)
@@ -242,9 +239,7 @@ void removeDaSubarvore(NO *no, int chave)
 			NO *x;
 			int pred = maxSubarvore(y, &x);
 
-			printf("%d", x->numChaves);
 			NO *prox = x->filhos[x->numChaves];
-			puts("erro besta");
 
 			for (int j = prox->numChaves; j > 0; j--)
 				prox->chave[j] = prox->chave[j - 1];
@@ -254,6 +249,7 @@ void removeDaSubarvore(NO *no, int chave)
 			prox->filhos[prox->numChaves] = NULL;
 
 			prox->chave[0] = pred;
+			prox->numChaves++;
 
 			removeDaSubarvore(y, pred);
 
@@ -264,7 +260,6 @@ void removeDaSubarvore(NO *no, int chave)
 		else if (z->numChaves >= t)
 		{
 			// 2b
-
 			int suc = minSubarvore(z);
 			no->chave[i] = suc;
 			removeDaSubarvore(z, chave);
@@ -320,8 +315,6 @@ void removeDaSubarvore(NO *no, int chave)
 
 				irmaoEsq->numChaves--;
 				filho->numChaves++;
-
-				printf("%d\n", filho->filhos[filho->numChaves]->chave[0]);
 			}
 			else if (irmaoDir && irmaoDir->numChaves >= t)
 			{
@@ -405,7 +398,6 @@ void imprimeEmOrdem(NO *no, FILE *arq_saida)
 	if (!no)
 		return;
 	fprintf(arq_saida, "(");
-	printf("(");
 
 	for (int i = 0; i <= no->numChaves; i++)
 	{
@@ -414,24 +406,20 @@ void imprimeEmOrdem(NO *no, FILE *arq_saida)
 			imprimeEmOrdem(no->filhos[i], arq_saida);
 			if (i < no->numChaves)
 			{
-				printf(" ");
 				fprintf(arq_saida, " ");
 			}
 		}
 		if (i < no->numChaves)
 		{
-			printf("%d", no->chave[i]);
 			fprintf(arq_saida, "%d", no->chave[i]);
 			if (i < no->numChaves - 1 || !no->folha)
 			{
-				printf(" ");
 				fprintf(arq_saida, " ");
 			}
 		}
 	}
 
 	fprintf(arq_saida, ")");
-	printf(")");
 }
 
 void imprimeDados(NO *no)
@@ -445,12 +433,9 @@ void imprimeDados(NO *no)
 	
 	while (p)
 	{
-		puts("inicio");
-		printf("%d\n", p);
 		for (int i = 0; i < p->numChaves; i++)
 			printf("%d ", p->chave[i]);
 		p = p->filhos[p->numChaves];
-		puts("eh aqui?");
 	}
 }
 
@@ -462,29 +447,21 @@ void executaComando(char comando, ArvB *arvore, FILE *arq_entrada, FILE *arq_sai
 	case 'i':
 		fscanf(arq_entrada, "%d", &chave);
 		insere(arvore, chave);
-		puts("");
 		break;
 	case 'r':
 		fscanf(arq_entrada, "%d", &chave);
-		printf("Remove %d\n", chave);
 		removeDaArvore(arvore, chave);
-		puts("");
 		break;
 	case 'p':
 		if (arvore->raiz->numChaves > 0)
 		{
 			imprimeEmOrdem(arvore->raiz, arq_saida);
-			puts("");
-			imprimeDados(arvore->raiz);
-			puts("");
 			fprintf(arq_saida, "\n");
 		}
 		else
 		{
-			puts("Vazia");
 			fprintf(arq_saida, "Vazia\n");
 		}
-		puts("");
 		break;
 	}
 }
